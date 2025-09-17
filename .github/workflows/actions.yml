@@ -5,11 +5,10 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      # Basic info
-      - run: echo "🎉 Triggered by ${{ github.event_name }} on branch ${{ github.ref }} in repo ${{ github.repository }}."
+      - run: echo "🎉 Triggered by ${{ github.event_name }} on branch ${{ github.ref 
+}} in repo ${{ github.repository }}."
       - run: echo "🐧 Runner OS: ${{ runner.os }}"
 
-      # Install Codon
       - name: Install Codon
         run: |
           mkdir -p ${HOME}/.codon
@@ -17,35 +16,29 @@ jobs:
           curl -L https://github.com/exaloop/seq/releases/download/v0.11.5/seq-linux-x86_64.tar.gz | tar zxvf - -C ${HOME}/.codon/lib/codon/plugins
           echo "${HOME}/.codon/bin" >> $GITHUB_PATH
 
-      # Checkout repo
       - name: Check out repository code
         uses: actions/checkout@v5
 
-      # Set up Python
       - uses: actions/setup-python@v6
         with:
           python-version: '3.13'
 
-      # Install Python dependencies
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
           pip install matplotlib
 
-      # Set up Codon Python bridge
       - name: Set up Codon Python bridge
         run: |
           pip install find_libpython
           echo "CODON_PYTHON=$(find_libpython)" >> $GITHUB_ENV
           echo "Found Python at: $(find_libpython)"
 
-      # Run Week 1 evaluation
       - name: Week 1
         run: |
           cd week1
           bash evaluate.sh
 
-      # Final messages
       - run: echo "💡 Repository cloned to runner."
       - run: echo "🖥️ Workflow ready to test your code."
 
