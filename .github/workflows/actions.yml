@@ -5,8 +5,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "🎉 Triggered by ${{ github.event_name }} on branch ${{ github.ref 
-}} in repo ${{ github.repository }}."
+      - run: echo "🎉 Triggered by ${{ github.event_name }} on branch ${{ github.ref }} in repo ${{ github.repository }}."
       - run: echo "🐧 Runner OS: ${{ runner.os }}"
 
       - name: Install Codon
