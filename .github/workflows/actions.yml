@@ -9,40 +9,40 @@ jobs:
       - run: echo "This job is now running on a ${{ runner.os }} server hosted by GitHub!"
       - run: echo "Branch: ${{ github.ref }}, Repository: ${{ github.repository }}"
       
+      - name: Check out repository code
+        uses: actions/checkout@v5
+      
       - name: Install Codon
         run: |
           mkdir -p ${{HOME}}/.codon
           curl -L https://github.com/exaloop/codon/releases/download/v0.19.3/codon-linux-x86_64.tar.gz | tar zxvf - --strip-components=1 -C ${{HOME}}/.codon
           curl -L https://github.com/exaloop/seq/releases/download/v0.11.5/seq-linux-x86_64.tar.gz | tar zxvf - -C ${{HOME}}/.codon/lib/codon/plugins
           export PATH=${{PATH}}:${{HOME}}/.codon/bin
-
-      - name: Check out repository code
-        uses: actions/checkout@v5
-
+      
       - name: Setup Python
         uses: actions/setup-python@v6
         with:
           python-version: '3.13'
-
+      
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
           pip install matplotlib
-
+      
       - name: Set up Codon Python bridge
         run: |
           pip install find_libpython
           export CODON_PYTHON=$(find_libpython)
-
+      
       - name: Week 1
         run: |
           cd week1
           bash evaluate.sh
-
+      
       - name: Week 2
         run: |
           cd week2
           bash evaluate.sh
-
+      
       - run: echo "Repository cloned to runner."
       - run: echo "Workflow ready to test your code."
