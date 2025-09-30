@@ -20,7 +20,8 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v5
 
-      - uses: actions/setup-python@v6
+      - name: Setup Python
+        uses: actions/setup-python@v6
         with:
           python-version: '3.13'
 
@@ -34,13 +35,11 @@ jobs:
           pip install find_libpython
           export CODON_PYTHON=$(find_libpython)
 
-      # Run Week 1
       - name: Week 1
         run: |
           cd week1
           bash evaluate.sh
 
-      # Run Week 2
       - name: Week 2
         run: |
           cd week2
