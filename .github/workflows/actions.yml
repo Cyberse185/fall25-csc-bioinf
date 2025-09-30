@@ -35,18 +35,15 @@ jobs:
           echo "CODON_PYTHON=$(find_libpython)" >> $GITHUB_ENV
           echo "Found Python at: $(find_libpython)"
 
-      # Run Week 1
       - name: Week 1
         run: |
           cd week1
           bash evaluate.sh
 
-      # Run Week 2
       - name: Week 2
         run: |
           cd week2
           bash evaluate.sh
 
-      # Done
       - run: echo "Repository cloned to runner."
       - run: echo "Workflow ready to test your code."
