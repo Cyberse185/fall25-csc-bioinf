@@ -5,24 +5,21 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      
+
       - run: echo "The job was automatically triggered by a ${{ github.event_name }} event."
       - run: echo "This job is running on a ${{ runner.os }} server hosted by GitHub!"
       - run: echo "Branch: ${{ github.ref }}, Repository: ${{ github.repository }}"
 
-      
       - name: Install Codon
         run: |
           mkdir -p ${HOME}/.codon
           curl -L https://github.com/exaloop/codon/releases/download/v0.19.3/codon-linux-x86_64.tar.gz | tar zxvf - --strip-components=1 -C ${HOME}/.codon
           curl -L https://github.com/exaloop/seq/releases/download/v0.11.5/seq-linux-x86_64.tar.gz | tar zxvf - -C ${HOME}/.codon/lib/codon/plugins
-          export PATH=${PATH}:${HOME}/.codon/bin
+          echo "PATH=${HOME}/.codon/bin:${PATH}" >> $GITHUB_ENV
 
-      
       - name: Check out repository code
         uses: actions/checkout@v5
 
-      
       - uses: actions/setup-python@v6
         with:
           python-version: '3.13'
@@ -32,7 +29,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install matplotlib
 
-      
       - name: Set up Codon Python bridge
         run: |
           pip install find_libpython
@@ -45,12 +41,12 @@ jobs:
           cd week1
           bash evaluate.sh
 
-      #  Run Week 2
+      # Run Week 2
       - name: Week 2
         run: |
           cd week2
           bash evaluate.sh
 
-      #  Done
+      # Done
       - run: echo "Repository cloned to runner."
       - run: echo "Workflow ready to test your code."
