@@ -8,7 +8,7 @@
 * **Performance**: Found this model significantly more effective than previous versions for understanding Codon's type system and debugging complex compilation errors
 
 ### ChatGPT (Secondary Tool)
-* **Version**: GPT-4o mini (accessed via chat.openai.com)
+* **Version**: GPT-5 mini (accessed via chat.openai.com)
 * **Secondary Usage**: 15-20% of AI assistance
 * **Use Cases**: Second opinion
 
