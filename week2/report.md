@@ -37,12 +37,9 @@ This assignment involved porting BioPython's Bio.motifs module to Codon.
 
 ## Major Challenge
 
-### 1. Record Class Type Checking Failure - The Central Challenge (UNSOLVED)
+### 1. Record Class Type Checking Failure
 
-**Issue**: This was the most significant and time-consuming blocker of the entire assignment. Codon's type checker completely fails on a class that simultaneously:
-- Inherits from Python's built-in `list` type
-- Has additional custom attributes with specific types
-- Needs to store a `Dict[str, float]` for background frequencies
+**Issue**: This was the most significant and time-consuming blocker of the entire assignment. 
 
 **The Error**:
 ```
