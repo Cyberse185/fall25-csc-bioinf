@@ -82,5 +82,5 @@ self.background = {}  # Still failed - Codon inferred NoneType
 ```
 
 
-**Time Spent**: 25+ hours(very rough estimate). 
+**Time Spent**: 25+ hours(rough estimate). 
 
