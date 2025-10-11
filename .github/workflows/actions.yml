@@ -18,14 +18,14 @@ jobs:
         uses: actions/checkout@v5
       - uses: actions/setup-python@v6
         with:
-          python-version: '3.13'
+          python-version: '3.12'
       - name: Set up Codon Python bridge
         run: |
-          pip install find_libpython
-          export CODON_PYTHON=$(find_libpython)
-          echo "Found Python at: ${CODON_PYTHON}"
+          pip install find_libpython biotite numpy
+          PYTHON_LIB=$(python -c "import sysconfig; print(sysconfig.get_config_var('LIBDIR'))")
+          export CODON_PYTHON="${PYTHON_LIB}/libpython3.12.so"
           echo "CODON_PYTHON=${CODON_PYTHON}" >> $GITHUB_ENV
-          pip install biotite
+          echo "Using Python library: ${CODON_PYTHON}"
       - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
       - run: echo "🖥️ The workflow is now ready to test your code on the runner."
       - name: Week 3
