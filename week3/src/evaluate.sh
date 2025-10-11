@@ -1,11 +1,19 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
+
+# --- Python timing ---
+PY_MS=$(python test_phylo_python.py --just-ms | tail -n1)
+
+# --- Codon timing ---
+export CODON_PYTHON=$(python -m find_libpython)
+export CODONPATH="$SCRIPT_DIR"
+CODON_MS=$(codon run test_phylo_codon.py --just-ms | tail -n1)
+
+# --- Output ---
 echo "Language    Runtime"
 echo "-------------------"
-
-# Run Python tests
-python3 test_phylo_python.py
-
-# Set Python library path for Codon
-export CODON_PYTHON=$(which python3)
-codon run test_phylo_codon.py
+printf "python      %sms\n" "$PY_MS"
+printf "codon       %sms\n" "$CODON_MS"
