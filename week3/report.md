@@ -29,11 +29,5 @@ All three required tests pass:
 - `test_upgma`: Tests UPGMA algorithm correctness
 - `test_neighbor_joining`: Tests neighbor joining algorithm
 
-## Performance
-- Python (biotite): 2ms
-- Codon: 1ms
-
-Codon implementation is 2x faster on the 20x20 distance matrix as expected. 
-
 ## Time Spent
 Approximately 8-10 hours total
