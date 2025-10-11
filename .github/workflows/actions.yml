@@ -25,16 +25,16 @@ jobs:
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install biopython
+          pip install biopython biotite
           
       - name: Set up Codon Python bridge
         run: |
           pip install find_libpython
           export CODON_PYTHON=$(find_libpython)
           echo "CODON_PYTHON=${CODON_PYTHON}" >> $GITHUB_ENV
-          
-      - name: Week 2
+        
+      - name: Week 3
         run: |
-          cd week2
+          cd week3/src
           bash evaluate.sh
         continue-on-error: true
