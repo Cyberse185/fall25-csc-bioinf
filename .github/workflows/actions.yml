@@ -7,29 +7,34 @@ jobs:
       - run: echo "The job was automatically triggered by a ${{ github.event_name }} event."
       - run: echo "This job is now running on a ${{ runner.os }} server hosted by GitHub!"
       
-      - name: Check out repository code
-        uses: actions/checkout@v5
-      
       - name: Install Codon
         run: |
           mkdir -p ${HOME}/.codon
           curl -L https://github.com/exaloop/codon/releases/download/v0.19.3/codon-linux-x86_64.tar.gz | tar zxvf - --strip-components=1 -C ${HOME}/.codon
           curl -L https://github.com/exaloop/seq/releases/download/v0.11.5/seq-linux-x86_64.tar.gz | tar zxvf - -C ${HOME}/.codon/lib/codon/plugins
+          export PATH=${PATH}:${HOME}/.codon/bin
           echo "${HOME}/.codon/bin" >> "$GITHUB_PATH"
+          
+      - name: Check out repository code
+        uses: actions/checkout@v5
         
       - uses: actions/setup-python@v6
         with:
           python-version: '3.13'
           
-      - name: Set up Codon Python bridge
+      - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install find_libpython numpy biotite
-          FOUND_PYTHON=$(python -c 'import find_libpython as f; print(f.find_libpython())')
-          echo "CODON_PYTHON=${FOUND_PYTHON}" >> "$GITHUB_ENV"
-          echo "Found Python library at: ${FOUND_PYTHON}"
+          pip install numpy biotite
+          
+      - name: Set up Codon Python bridge
+        run: |
+          pip install find_libpython
+          echo "CODON_PYTHON=$(python -c 'import find_libpython as f; print(f.find_libpython())')" >> "$GITHUB_ENV"
         
       - name: Week 3
+        env:
+          CODON_PYTHON: ${{ env.CODON_PYTHON }}
         run: |
           cd week3/src
           bash evaluate.sh
