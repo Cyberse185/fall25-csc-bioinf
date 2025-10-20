@@ -156,11 +156,6 @@ def run_tests():
         print(f"# Testing {pair_name}: seq1_len={len(seq1)}, seq2_len={len(seq2)}")
         
         for method in methods:
-            # Skip affine for MT sequences - Python runs out of memory (needs 3 tables ~23GB)
-            if method == "affine" and pair_name == "mt_human":
-                print(f"affine-{pair_name:<13} {'python':<12} SKIPPED (out of memory)")
-                continue
-            
             start = time.time()
             
             if method == "global":
