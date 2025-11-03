@@ -7,14 +7,6 @@ jobs:
       - run: echo "The job was automatically triggered by a ${{ github.event_name }} event."
       - run: echo "This job is now running on a ${{ runner.os }} server hosted by GitHub!"
       
-      - name: Install Codon
-        run: |
-          mkdir -p ${HOME}/.codon
-          curl -L https://github.com/exaloop/codon/releases/download/v0.19.3/codon-linux-x86_64.tar.gz | tar zxvf - --strip-components=1 -C ${HOME}/.codon
-          curl -L https://github.com/exaloop/seq/releases/download/v0.11.5/seq-linux-x86_64.tar.gz | tar zxvf - -C ${HOME}/.codon/lib/codon/plugins
-          export PATH=${PATH}:${HOME}/.codon/bin
-          echo "${HOME}/.codon/bin" >> "$GITHUB_PATH"
-          
       - name: Check out repository code
         uses: actions/checkout@v5
         
@@ -22,11 +14,33 @@ jobs:
         with:
           python-version: '3.13'
           
+      - name: Install bioinformatics tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            bwa \
+            samtools \
+            bcftools \
+            tabix \
+            wget \
+            bzip2
+          
+          # Install minimap2
+          wget https://github.com/lh3/minimap2/releases/download/v2.24/minimap2-2.24_x64-linux.tar.bz2
+          tar -xjf minimap2-2.24_x64-linux.tar.bz2
+          sudo cp minimap2-2.24_x64-linux/minimap2 /usr/local/bin/
+          
+          # Install WhatsHap
+          pip install whatshap
+          
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
+          pip install jupyter matplotlib pandas numpy
           
-      - name: Week 4
+      - name: Week 5
         run: |
-          cd week4
-          bash evaluate.sh
+          cd week5
+          jupyter execute week5.ipynb
+          
+      - run: echo "Status: ${{ job.status }}"
