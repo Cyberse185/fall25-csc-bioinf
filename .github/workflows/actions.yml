@@ -1,7 +1,5 @@
 name: Github CI
-
 on: [push]
-
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -45,4 +43,4 @@ jobs:
           cd week5
           jupyter execute week5.ipynb
           
-      - run: echo "Status: ${{ job.status }}"
+     
