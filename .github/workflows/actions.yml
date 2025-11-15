@@ -1,7 +1,5 @@
 name: Week 6 CI
-
 on: [push, pull_request]
-
 jobs:
   run-notebook:
     runs-on: ubuntu-latest
@@ -9,15 +7,15 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v5
-
+      
       - name: Set up Miniconda
         uses: conda-incubator/setup-miniconda@v3
         with:
           auto-activate-base: false
-          python-version: 3.10 # Use a stable Python version
-
+          python-version: "3.10"  # Quote the version number
+      
       - name: Install Week 6 Dependencies
-        shell: bash -l {0} # Use a login shell for conda
+        shell: bash -l {0}
         run: |
           # Install heavy packages with Conda from the correct channels
           conda install -y -c bioconda -c conda-forge \
@@ -32,10 +30,9 @@ jobs:
           
           # Install celltypist with pip
           pip install celltypist
-
+      
       - name: Run Week 6 Notebook
-        shell: bash -l {0} # Use a login shell to access the conda environment
+        shell: bash -l {0}
         run: |
-          # Execute the Week 6 notebook and allow it to finish
-          # The --to notebook --inplace ensures it runs, even if there are errors
+          # Execute the Week 6 notebook
           jupyter execute week6/week6.ipynb
