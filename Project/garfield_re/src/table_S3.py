@@ -1,4 +1,7 @@
-"""Reproduce Supplementary Table S3 - GARFIELD-NGS Performance at Different Thresholds"""
+"""
+Reproduce Supplementary Table S3 - GARFIELD-NGS Performance at Different Thresholds
+Updates: Now includes GATK Hard Filter comparisons for Illumina datasets.
+"""
 
 import h2o
 import pandas as pd
@@ -8,7 +11,7 @@ from sklearn.metrics import (accuracy_score, recall_score, precision_score,
                              matthews_corrcoef, confusion_matrix, roc_curve, auc)
 from load_data import GarfieldDataLoader
 
-def calculate_metrics(y_true, y_pred, y_proba):
+def calculate_metrics(y_true, y_pred, y_proba=None):
     """Calculate all metrics for Table S3"""
     tn, fp, fn, tp = confusion_matrix(y_true, y_pred).ravel()
     
@@ -30,47 +33,77 @@ def calculate_metrics(y_true, y_pred, y_proba):
         'MCC': mcc
     }
 
+def get_gatk_hard_filter_predictions(df, variant_type):
+    """
+    Apply GATK Best Practices Hard Filters (Exact Implementation).
+    Returns y_pred (1=Pass/True, 0=Fail/False)
+    """
+    # Initialize as all Passing (1)
+    y_pred = np.ones(len(df), dtype=int)
+    
+    if "Illumina SNVs" in variant_type:
+        # GATK SNV Hard Filters (Standard)
+        # Added QUAL < 30.0
+        mask_fail = (
+            (df['QD'] < 2.0) |
+            (df['QUAL'] < 30.0) |
+            (df['MQ'] < 40.0) |
+            (df['FS'] > 60.0) |
+            (df['SOR'] > 3.0) |
+            (df['MQRankSum'] < -12.5) |
+            (df['ReadPosRankSum'] < -8.0)
+        )
+        y_pred[mask_fail] = 0
+        return y_pred
+
+    elif "Illumina INS/DELs" in variant_type:
+        # GATK INDEL Hard Filters (Standard)
+        # Added QUAL < 30.0
+        mask_fail = (
+            (df['QD'] < 2.0) |
+            (df['QUAL'] < 30.0) |
+            (df['ReadPosRankSum'] < -20.0) |
+            (df['FS'] > 200.0) |
+            (df['SOR'] > 10.0)
+        )
+        y_pred[mask_fail] = 0
+        return y_pred
+    
+    else:
+        return None
+    
 def find_threshold_for_tpr(y_true, y_proba, target_tpr):
     """Find threshold that achieves target TPR"""
     fpr, tpr, thresholds = roc_curve(y_true, y_proba)
-    
-    # Find threshold closest to target TPR
     idx = np.argmin(np.abs(tpr - target_tpr))
     return thresholds[idx]
 
 def find_max_accuracy_threshold(y_true, y_proba):
     """Find threshold that maximizes accuracy"""
     fpr, tpr, thresholds = roc_curve(y_true, y_proba)
-    
     best_acc = 0
     best_threshold = 0.5
-    
     for threshold in thresholds:
         y_pred = (y_proba >= threshold).astype(int)
         acc = accuracy_score(y_true, y_pred)
         if acc > best_acc:
             best_acc = acc
             best_threshold = threshold
-    
     return best_threshold
 
 def find_max_f1_threshold(y_true, y_proba):
     """Find threshold that maximizes F1 score"""
     fpr, tpr, thresholds = roc_curve(y_true, y_proba)
-    
     best_f1 = 0
     best_threshold = 0.5
-    
     for threshold in thresholds:
         y_pred = (y_proba >= threshold).astype(int)
         precision = precision_score(y_true, y_pred, zero_division=0)
         recall = recall_score(y_true, y_pred, zero_division=0)
         f1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
-        
         if f1 > best_f1:
             best_f1 = f1
             best_threshold = threshold
-    
     return best_threshold, best_f1
 
 def evaluate_model(model_path, test_data, features, variant_type):
@@ -86,22 +119,22 @@ def evaluate_model(model_path, test_data, features, variant_type):
     # Prepare test data
     X_test = test_data[features].copy()
     y_test = (test_data['Class'] == 'T').astype(int)
+    y_true = y_test.values
     
-    # Handle missing values
-    X_test = X_test.fillna(X_test.median())
+    # Handle missing values (Critical for Hard Filters to work, especially RankSum)
     X_test = X_test.replace([np.inf, -np.inf], np.nan)
-    X_test = X_test.fillna(X_test.median())
+    # Fill specific cols with 0 if missing (common in GATK for missing RankSums)
+    X_test = X_test.fillna(0) 
     
     # Convert to H2O
     test_h2o_data = X_test.copy()
-    test_h2o_data['target'] = y_test.values
+    test_h2o_data['target'] = y_true
     test_h2o = h2o.H2OFrame(test_h2o_data)
     test_h2o['target'] = test_h2o['target'].asfactor()
     
     # Get predictions
     predictions = model.predict(test_h2o)
     y_proba = predictions['p1'].as_data_frame().values.flatten()
-    y_true = y_test.values
     
     print(f"Test set size: {len(y_true)}")
     print(f"Class balance: {pd.Series(y_true).value_counts().to_dict()}")
@@ -127,9 +160,17 @@ def evaluate_model(model_path, test_data, features, variant_type):
         (f'Maximum f1 ({max_f1_score:.3f})', threshold_max_f1)
     ]:
         y_pred = (y_proba >= threshold).astype(int)
-        metrics = calculate_metrics(y_true, y_pred, y_proba)
+        metrics = calculate_metrics(y_true, y_pred)
         metrics['criterion'] = criterion
-        metrics['threshold'] = threshold
+        metrics['threshold'] = f"{threshold:.4f}"
+        results.append(metrics)
+        
+    # --- ADD HARD FILTER COMPARISON ---
+    gatk_pred = get_gatk_hard_filter_predictions(X_test, variant_type)
+    if gatk_pred is not None:
+        metrics = calculate_metrics(y_true, gatk_pred)
+        metrics['criterion'] = 'GATK Standard Hard Filter'
+        metrics['threshold'] = 'N/A'
         results.append(metrics)
     
     # Create results DataFrame
@@ -145,8 +186,7 @@ def evaluate_model(model_path, test_data, features, variant_type):
 
 def main():
     print("="*70)
-    print("REPRODUCING SUPPLEMENTARY TABLE S3")
-    print("GARFIELD-NGS Performance at Different Thresholds")
+    print("REPRODUCING SUPPLEMENTARY TABLE S3 (With Hard Filters)")
     print("="*70)
     
     # Initialize H2O
@@ -157,6 +197,7 @@ def main():
     loader = GarfieldDataLoader()
     
     # Model configurations
+    # UPDATE PATHS TO MATCH YOUR SYSTEM
     models = [
         {
             'name': 'Illumina INS/DELs',
@@ -205,34 +246,12 @@ def main():
         }
     
     # Save combined results
-    print("\n" + "="*70)
-    print("SAVING RESULTS")
-    print("="*70)
-    
     output_dir = Path("results")
     output_dir.mkdir(exist_ok=True)
     
-    # Save individual results
-    for variant_type, data in all_results.items():
-        safe_name = variant_type.replace('/', '_').replace(' ', '_')
-        output_file = output_dir / f"table_s3_{safe_name}.csv"
-        data['results'].to_csv(output_file, index=False)
-        print(f"Saved: {output_file}")
-    
-    # Create combined table
-    print("\n" + "="*70)
-    print("FINAL TABLE S3 - GARFIELD-NGS PERFORMANCE")
-    print("="*70)
-    
-    for variant_type, data in all_results.items():
-        print(f"\n{variant_type} (AUC: {data['auc']:.4f})")
-        print("-" * 70)
-        print(data['results'].to_string(index=False))
-    
-    # Save combined results
-    combined_file = output_dir / "table_s3_combined.txt"
+    combined_file = output_dir / "table_s3_combined_with_hard_filters.txt"
     with open(combined_file, 'w') as f:
-        f.write("SUPPLEMENTARY TABLE S3 - GARFIELD-NGS PERFORMANCE\n")
+        f.write("SUPPLEMENTARY TABLE S3 - GARFIELD-NGS PERFORMANCE (WITH GATK BASELINES)\n")
         f.write("="*70 + "\n\n")
         for variant_type, data in all_results.items():
             f.write(f"\n{variant_type} (AUC: {data['auc']:.4f})\n")
@@ -241,9 +260,7 @@ def main():
             f.write("\n\n")
     
     print(f"\nCombined results saved to: {combined_file}")
-    
     h2o.cluster().shutdown()
-    print("\n✓ Table S3 reproduction complete!")
 
 if __name__ == "__main__":
     main()

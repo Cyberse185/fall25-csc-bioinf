@@ -1,7 +1,5 @@
 ## Abstract
-Variant calling in genomic sequencing generates false positives that require 
-filtering. GARFIELD (Genomic vARiant FIltering by dEep Learning moDels) uses 
-deep learning to try to improve variant filtering accuracy. We successfully replicated GARFIELD-NGS results using their provided test sets, achieving AUCs within 0.3% the published values. To test the authours claim that GARFIELD was more robust at lower coverage(30x), since this data was not avialabel in the repository, ..
+Variant calling in next-generation sequencing generates high false-positive rates that require filtering. GARFIELD-NGS (Genomic vARiant FIltering by dEep Learning moDels) uses deep learning to improve variant filtering accuracy over traditional methods. We successfully replicated the published GARFIELD-NGS results, achieving AUC scores within 0.3% of reported values, and additionally sought to provide external validation of the authors’ claim that GARFIELD-NGS is more robust at lower sequencing coverage by generating matched 30× downsampled datasets from three NA12878 whole-genome samples and re-calling variants with GATK.
 
 
 
