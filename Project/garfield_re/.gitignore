@@ -1,0 +1,26 @@
+# --- IGNORE DATA (Too big for GitHub) ---
+*.tsv
+*.table
+data/
+tables/
+csvs/
+GIAB_positions.txt
+
+# --- IGNORE MODELS (Binary files) ---
+models/
+predictions/
+
+# --- IGNORE SYSTEM FILES ---
+__pycache__/
+*.pyc
+.DS_Store
+.ipynb_checkpoints
+
+# --- IGNORE NESTED REPOS ---
+GARFIELD-NGS/
+
+# --- EXCEPTIONS (Things we actually want) ---
+!results/
+!figures/
+!*.md
+!*.py

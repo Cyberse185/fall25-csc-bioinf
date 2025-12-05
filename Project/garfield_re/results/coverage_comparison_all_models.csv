@@ -1,0 +1,7 @@
+model,variant_type,total_30x,filtered_30x,filter_rate_30x,total_full,filtered_full,filter_rate_full,difference
+Logistic Regression,SNV,300414,0,0.0,1512241,0,0.0,0.0
+Random Forest,SNV,300414,0,0.0,1512241,0,0.0,0.0
+GARFIELD,SNV,300414,0,0.0,1512241,0,0.0,0.0
+Logistic Regression,INDEL,30346,0,0.0,146282,0,0.0,0.0
+Random Forest,INDEL,30346,0,0.0,146282,0,0.0,0.0
+GARFIELD,INDEL,30346,0,0.0,146282,0,0.0,0.0
